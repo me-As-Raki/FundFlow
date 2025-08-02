@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Fonts (optional: can use Google Fonts via _layout.tsx_) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+:root {
+  --bg-light: #ffffff;
+  --bg-dark: #000000;
+  --text-light: #0f0f0f;
+  --text-dark: #f5f5f5;
+}
+
+html[data-scroll-behavior="smooth"] {
+  scroll-behavior: smooth;
+}
+
+
+html {
+  font-family: 'Inter', sans-serif;
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-white text-black dark:bg-black dark:text-white transition-colors duration-300;
+}
+
