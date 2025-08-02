@@ -35,9 +35,8 @@ interface FundraiserData {
 interface LeaderboardEntry {
   userId: string;
   total: number;
-  donations: (Donor & { fundraiserOwner?: string })[];
+  donations: Donor[];
   userInfo?: User;
-  expanded?: boolean;
 }
 
 export default function LeaderboardPage() {
@@ -46,6 +45,7 @@ export default function LeaderboardPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [amountFilter, setAmountFilter] = useState("");
   const [sortOption, setSortOption] = useState("highest");
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const router = useRouter();
 
@@ -57,26 +57,18 @@ export default function LeaderboardPage() {
 
         for (const docSnap of fundraiserSnap.docs) {
           const data = docSnap.data() as FundraiserData;
-          const fundraiserId = docSnap.id;
-          const fundraiserOwnerId = data.createdBy || "unknown";
           const donors = data.donors || [];
 
           donors.forEach((donor) => {
-            const extendedDonation = {
-              ...donor,
-              fundraiserOwner: fundraiserOwnerId,
-              fundraiserId,
-            };
-
             if (donationMap.has(donor.userId)) {
               const entry = donationMap.get(donor.userId)!;
               entry.total += donor.amount;
-              entry.donations.push(extendedDonation);
+              entry.donations.push(donor);
             } else {
               donationMap.set(donor.userId, {
                 userId: donor.userId,
                 total: donor.amount,
-                donations: [extendedDonation],
+                donations: [donor],
               });
             }
           });
@@ -90,17 +82,6 @@ export default function LeaderboardPage() {
             entry.userInfo = userSnap.exists()
               ? (userSnap.data() as User)
               : { name: "Anonymous", email: "" };
-
-            await Promise.all(
-              entry.donations.map(async (donation) => {
-                const ownerSnap = await getDoc(
-                  doc(db, "users", donation.fundraiserOwner || "unknown")
-                );
-                donation.fundraiserOwner = ownerSnap.exists()
-                  ? (ownerSnap.data() as User).name
-                  : "Unknown";
-              })
-            );
           })
         );
 
@@ -116,12 +97,11 @@ export default function LeaderboardPage() {
     fetchLeaderboard();
   }, []);
 
-  const toggleExpand = (index: number) => {
-    setLeaderboard((prev) =>
-      prev.map((entry, i) =>
-        i === index ? { ...entry, expanded: !entry.expanded } : entry
-      )
-    );
+  const toggleExpand = (userId: string) => {
+    setExpanded((prev) => ({
+      ...prev,
+      [userId]: !prev[userId],
+    }));
   };
 
   const filteredLeaderboard = leaderboard
@@ -180,7 +160,6 @@ export default function LeaderboardPage() {
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 mb-6">
-        {/* Search */}
         <div className="relative w-full sm:w-64">
           <input
             type="text"
@@ -192,7 +171,6 @@ export default function LeaderboardPage() {
           <FaSearch className="absolute left-3 top-3 text-muted-foreground" />
         </div>
 
-        {/* Min Amount Filter */}
         <div className="relative w-full sm:w-48">
           <input
             type="number"
@@ -204,7 +182,6 @@ export default function LeaderboardPage() {
           <FaFilter className="absolute left-3 top-3 text-muted-foreground" />
         </div>
 
-        {/* Sort Option */}
         <div className="w-full sm:w-48">
           <select
             value={sortOption}
@@ -230,7 +207,7 @@ export default function LeaderboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: index * 0.05 }}
             className="group border border-border rounded-xl px-6 py-4 mb-4 bg-background hover:shadow-md hover:border-primary transition cursor-pointer"
-            onClick={() => toggleExpand(index)}
+            onClick={() => toggleExpand(entry.userId)}
           >
             <div className="flex items-center justify-between">
               <div>
@@ -246,7 +223,7 @@ export default function LeaderboardPage() {
                   ₹{entry.total.toLocaleString()}
                 </span>
                 <div className="bg-muted p-1 rounded-full">
-                  {entry.expanded ? (
+                  {expanded[entry.userId] ? (
                     <FaChevronUp className="w-4 h-4 text-muted-foreground" />
                   ) : (
                     <FaChevronDown className="w-4 h-4 text-muted-foreground" />
@@ -256,7 +233,7 @@ export default function LeaderboardPage() {
             </div>
 
             <AnimatePresence>
-              {entry.expanded && (
+              {expanded[entry.userId] && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
@@ -271,10 +248,7 @@ export default function LeaderboardPage() {
                         className="flex justify-between items-center text-sm px-4 py-2 rounded-md bg-muted hover:bg-muted/80 transition"
                       >
                         <div>
-                          Donated ₹{donation.amount.toLocaleString()}{" "}
-                          <span className="text-muted-foreground text-xs ml-2">
-                            to {donation.fundraiserOwner}
-                          </span>
+                          Donated ₹{donation.amount.toLocaleString()}
                         </div>
                         <div className="text-muted-foreground text-xs">
                           {new Date(donation.timestamp).toLocaleDateString(
