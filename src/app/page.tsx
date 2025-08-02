@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 export default function Page() {
   console.log('>>> Loading root page (/)...');
   
-  redirect('/login'); // ✅ Call redirect *inside* the component
+  redirect('/login');
 
-  return null; // optional, redirect happens before this
+  return null; 
 }

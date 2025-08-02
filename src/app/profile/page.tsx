@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { auth, db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { toast } from 'sonner';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { toast } from "sonner";
 import {
   Mail,
   Smartphone,
   CalendarDays,
   UserCircle2,
   ArrowLeft,
-} from 'lucide-react';
-import { motion } from 'framer-motion';
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -24,24 +24,24 @@ export default function ProfilePage() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
-        toast.error('You must be logged in to view your profile.');
+        toast.error("You must be logged in to view your profile.");
         return;
       }
 
       setUser(currentUser);
 
       try {
-        const docRef = doc(db, 'users', currentUser.uid);
+        const docRef = doc(db, "users", currentUser.uid);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           setProfile(docSnap.data());
         } else {
-          toast.warning('User profile not found.');
+          toast.warning("User profile not found.");
         }
       } catch (error) {
         console.error(error);
-        toast.error('Failed to fetch profile data.');
+        toast.error("Failed to fetch profile data.");
       } finally {
         setLoading(false);
       }
@@ -87,12 +87,12 @@ export default function ProfilePage() {
         <div className="space-y-5">
           <ProfileField
             label="Full Name"
-            value={profile?.name || user?.displayName || 'N/A'}
+            value={profile?.name || user?.displayName || "N/A"}
             icon={<UserCircle2 className="w-5 h-5 text-green-500" />}
           />
           <ProfileField
             label="Email"
-            value={user?.email || 'N/A'}
+            value={user?.email || "N/A"}
             icon={<Mail className="w-5 h-5 text-blue-500" />}
           />
           {profile?.phone && (
@@ -107,7 +107,7 @@ export default function ProfilePage() {
             value={
               user?.metadata?.creationTime
                 ? new Date(user.metadata.creationTime).toLocaleDateString()
-                : 'N/A'
+                : "N/A"
             }
             icon={<CalendarDays className="w-5 h-5 text-yellow-500" />}
           />

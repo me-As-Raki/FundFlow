@@ -1,54 +1,47 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { auth, db } from '@/lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { toast } from 'sonner';
-import { motion } from 'framer-motion';
-import {
-  Loader2,
-  Save,
-  User,
-  Mail,
-  Phone,
-  ArrowLeft,
-} from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
+import { Loader2, Save, User, Mail, Phone, ArrowLeft } from "lucide-react";
 
 export default function SettingsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
+    name: "",
+    email: "",
+    phone: "",
   });
 
   useEffect(() => {
     const fetchUser = async () => {
       const currentUser = auth.currentUser;
       if (!currentUser) {
-        toast.error('You must be logged in.');
+        toast.error("You must be logged in.");
         return;
       }
 
       try {
-        const docRef = doc(db, 'users', currentUser.uid);
+        const docRef = doc(db, "users", currentUser.uid);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           const data = docSnap.data();
           setFormData({
-            name: data.name || '',
-            email: data.email || '',
-            phone: data.phone || '',
+            name: data.name || "",
+            email: data.email || "",
+            phone: data.phone || "",
           });
         } else {
-          toast.info('Profile not found. Please complete your profile.');
+          toast.info("Profile not found. Please complete your profile.");
         }
       } catch (error) {
-        toast.error('Failed to fetch user data.');
+        toast.error("Failed to fetch user data.");
       } finally {
         setLoading(false);
       }
@@ -58,7 +51,7 @@ export default function SettingsPage() {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
@@ -68,12 +61,12 @@ export default function SettingsPage() {
     setSaving(true);
     try {
       const user = auth.currentUser;
-      if (!user) throw new Error('User not authenticated.');
+      if (!user) throw new Error("User not authenticated.");
 
-      await setDoc(doc(db, 'users', user.uid), formData, { merge: true });
-      toast.success('Profile updated successfully!');
+      await setDoc(doc(db, "users", user.uid), formData, { merge: true });
+      toast.success("Profile updated successfully!");
     } catch (error) {
-      toast.error('Error saving settings.');
+      toast.error("Error saving settings.");
     } finally {
       setSaving(false);
     }
@@ -101,7 +94,9 @@ export default function SettingsPage() {
             <User className="w-6 h-6 text-green-500" />
             Settings
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Update your profile details below.</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">
+            Update your profile details below.
+          </p>
         </div>
 
         {loading ? (
@@ -109,7 +104,7 @@ export default function SettingsPage() {
             <Loader2 className="animate-spin w-6 h-6 text-green-500" />
           </div>
         ) : (
-          <form className="space-y-5" onSubmit={e => e.preventDefault()}>
+          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
             {/* Name */}
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-2">

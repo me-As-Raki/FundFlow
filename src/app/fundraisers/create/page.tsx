@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   PlusCircle,
   ArrowLeft,
@@ -11,7 +11,7 @@ import {
   Layers,
   StickyNote,
   Loader2,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   addDoc,
   collection,
@@ -21,14 +21,14 @@ import {
   getDocs,
   doc,
   getDoc,
-} from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
+} from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
 
 export default function CreateFundraiserPage() {
-  const [title, setTitle] = useState('');
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('');
-  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState("");
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("");
+  const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -38,7 +38,7 @@ export default function CreateFundraiserPage() {
 
     const user = auth.currentUser;
     if (!user) {
-      toast.error('Please log in to create a fundraiser.');
+      toast.error("Please log in to create a fundraiser.");
       return;
     }
 
@@ -46,37 +46,39 @@ export default function CreateFundraiserPage() {
 
     try {
       const q = query(
-        collection(db, 'fundraisers'),
-        where('userId', '==', user.uid),
-        where('title', '==', title.trim())
+        collection(db, "fundraisers"),
+        where("userId", "==", user.uid),
+        where("title", "==", title.trim())
       );
       const querySnapshot = await getDocs(q);
 
       if (!title || !amount || !category || !description) {
-        toast.error('Please fill in all fields.');
+        toast.error("Please fill in all fields.");
         setLoading(false);
         return;
       }
 
       if (!isNaN(Number(amount)) && Number(amount) < 100) {
-        toast.error('Amount must be at least ₹100.');
+        toast.error("Amount must be at least ₹100.");
         setLoading(false);
         return;
       }
 
       if (!querySnapshot.empty) {
-        toast.warning('You’ve already created a fundraiser with this title.');
+        toast.warning("You’ve already created a fundraiser with this title.");
         setLoading(false);
         return;
       }
 
       // 🔥 Get user name from users collection
-      const userDocRef = doc(db, 'users', user.uid);
+      const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);
-      const userName = userDocSnap.exists() ? userDocSnap.data().name || 'Anonymous' : 'Anonymous';
+      const userName = userDocSnap.exists()
+        ? userDocSnap.data().name || "Anonymous"
+        : "Anonymous";
 
       // ✅ Add fundraiser with userName included
-      await addDoc(collection(db, 'fundraisers'), {
+      await addDoc(collection(db, "fundraisers"), {
         title: title.trim(),
         amount: Number(amount),
         category: category.trim(),
@@ -84,14 +86,14 @@ export default function CreateFundraiserPage() {
         userId: user.uid,
         userName,
         createdAt: serverTimestamp(),
-        status: 'open',
+        status: "open",
       });
 
-      toast.success('🎉 Fundraiser created successfully!');
-      router.push('/dashboard');
+      toast.success("🎉 Fundraiser created successfully!");
+      router.push("/dashboard");
     } catch (error) {
       console.error(error);
-      toast.error('Something went wrong. Please try again later.');
+      toast.error("Something went wrong. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -100,7 +102,6 @@ export default function CreateFundraiserPage() {
   return (
     <div className="min-h-screen px-4 py-8 sm:px-8 bg-gradient-to-br from-green-50 via-green-100 to-green-200 dark:from-[#10002B] dark:to-[#1b1033] transition-all duration-300">
       <div className="max-w-2xl mx-auto bg-white dark:bg-[#1d1b2c] rounded-2xl p-6 sm:p-8 shadow-xl border dark:border-zinc-800">
-
         {/* Go Back */}
         <button
           onClick={() => router.back()}
@@ -115,7 +116,6 @@ export default function CreateFundraiserPage() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
@@ -126,7 +126,7 @@ export default function CreateFundraiserPage() {
               type="text"
               required
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Medical Help for My Mother"
               disabled={loading}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
@@ -144,7 +144,7 @@ export default function CreateFundraiserPage() {
               required
               min="100"
               value={amount}
-              onChange={e => setAmount(e.target.value)}
+              onChange={(e) => setAmount(e.target.value)}
               placeholder="e.g., 50000"
               disabled={loading}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
@@ -161,7 +161,7 @@ export default function CreateFundraiserPage() {
               type="text"
               required
               value={category}
-              onChange={e => setCategory(e.target.value)}
+              onChange={(e) => setCategory(e.target.value)}
               placeholder="e.g., Medical, Education, Emergency"
               disabled={loading}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
@@ -177,7 +177,7 @@ export default function CreateFundraiserPage() {
             <textarea
               required
               value={description}
-              onChange={e => setDescription(e.target.value)}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the situation, why you need support, and how it will help."
               disabled={loading}
               className="w-full h-28 px-4 py-3 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-none"
@@ -189,9 +189,11 @@ export default function CreateFundraiserPage() {
             type="submit"
             disabled={loading}
             className={`w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-xl shadow-md transition 
-              ${loading
-                ? 'bg-blue-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+              ${
+                loading
+                  ? "bg-blue-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
+              }`}
           >
             {loading ? (
               <>

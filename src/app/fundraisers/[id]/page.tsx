@@ -1,19 +1,31 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import {
-  User, Pencil, Trash2, Download, Loader2, X, ArrowLeft,
-} from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
-import Link from 'next/link';
-import { toast } from 'sonner';
+  User,
+  Pencil,
+  Trash2,
+  Download,
+  Loader2,
+  X,
+  ArrowLeft,
+} from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
+import { toast } from "sonner";
 import {
-  collection, deleteDoc, doc, getDoc, getDocs, query,
-  Timestamp, where,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useAuth } from '@/lib/useAuth';
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  Timestamp,
+  where,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useAuth } from "@/lib/useAuth";
 
 type Fundraiser = {
   id: string;
@@ -39,7 +51,9 @@ export default function FundraiserDetailsPage() {
 
   const [fundraiser, setFundraiser] = useState<Fundraiser | null>(null);
   const [creator, setCreator] = useState<UserData | null>(null);
-  const [relatedFundraisers, setRelatedFundraisers] = useState<Fundraiser[]>([]);
+  const [relatedFundraisers, setRelatedFundraisers] = useState<Fundraiser[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -49,11 +63,11 @@ export default function FundraiserDetailsPage() {
 
     const fetchFundraiserAndCreator = async () => {
       try {
-        const docRef = doc(db, 'fundraisers', id as string);
+        const docRef = doc(db, "fundraisers", id as string);
         const docSnap = await getDoc(docRef);
 
         if (!docSnap.exists()) {
-          toast.error('Fundraiser not found');
+          toast.error("Fundraiser not found");
           setLoading(false);
           return;
         }
@@ -67,25 +81,25 @@ export default function FundraiserDetailsPage() {
 
         setFundraiser(fundraiserData);
 
-        const userRef = doc(db, 'users', data.userId);
+        const userRef = doc(db, "users", data.userId);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
           const userData = userSnap.data() as Partial<UserData>;
           setCreator({
-            name: userData.name ?? 'Anonymous',
-            email: userData.email ?? 'Not provided',
+            name: userData.name ?? "Anonymous",
+            email: userData.email ?? "Not provided",
           });
         } else {
           setCreator({
-            name: 'Unknown User',
-            email: 'Unavailable',
+            name: "Unknown User",
+            email: "Unavailable",
           });
         }
 
         await fetchRelated(data.category, docSnap.id);
       } catch (err) {
-        console.error('Error loading fundraiser:', err);
-        toast.error('Failed to load fundraiser');
+        console.error("Error loading fundraiser:", err);
+        toast.error("Failed to load fundraiser");
       } finally {
         setLoading(false);
       }
@@ -93,14 +107,17 @@ export default function FundraiserDetailsPage() {
 
     const fetchRelated = async (category: string, currentId: string) => {
       try {
-        const q = query(collection(db, 'fundraisers'), where('category', '==', category));
+        const q = query(
+          collection(db, "fundraisers"),
+          where("category", "==", category)
+        );
         const snapshot = await getDocs(q);
         const results = snapshot.docs
           .filter((doc) => doc.id !== currentId)
           .map((doc) => ({ id: doc.id, ...doc.data() } as Fundraiser));
         setRelatedFundraisers(results.slice(0, 3));
       } catch (err) {
-        console.error('Error loading related fundraisers:', err);
+        console.error("Error loading related fundraisers:", err);
       }
     };
 
@@ -111,12 +128,12 @@ export default function FundraiserDetailsPage() {
     if (!fundraiser) return;
     try {
       setDeleting(true);
-      await deleteDoc(doc(db, 'fundraisers', fundraiser.id));
-      toast.success('Fundraiser deleted');
-      router.push('/dashboard');
+      await deleteDoc(doc(db, "fundraisers", fundraiser.id));
+      toast.success("Fundraiser deleted");
+      router.push("/dashboard");
     } catch (err) {
       console.error(err);
-      toast.error('Failed to delete fundraiser');
+      toast.error("Failed to delete fundraiser");
     } finally {
       setDeleting(false);
       setShowConfirm(false);
@@ -140,8 +157,14 @@ export default function FundraiserDetailsPage() {
   }
 
   const {
-    title, description, amount, raised = 0, createdAt,
-    userId, status, category,
+    title,
+    description,
+    amount,
+    raised = 0,
+    createdAt,
+    userId,
+    status,
+    category,
   } = fundraiser;
 
   const capitalizedTitle = title.charAt(0).toUpperCase() + title.slice(1);
@@ -160,14 +183,17 @@ export default function FundraiserDetailsPage() {
           className="mb-6 flex items-center text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back 
+          Back
         </button>
 
-        <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">{description}</p>
+        <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
+          {description}
+        </p>
 
         <div className="bg-gray-100 dark:bg-zinc-800 p-4 rounded-lg mb-4">
           <p className="font-medium text-sm text-gray-600 dark:text-gray-400">
-            ₹{raised.toLocaleString('en-IN')} raised of ₹{amount.toLocaleString('en-IN')} ({percentageRaised}%)
+            ₹{raised.toLocaleString("en-IN")} raised of ₹
+            {amount.toLocaleString("en-IN")} ({percentageRaised}%)
           </p>
           <div className="h-2 bg-gray-300 dark:bg-zinc-700 rounded overflow-hidden mt-1">
             <div
@@ -177,9 +203,16 @@ export default function FundraiserDetailsPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm mt-4 text-gray-600 dark:text-gray-400">
-            <p><strong>Category:</strong> {category}</p>
-            <p><strong>Status:</strong> {status}</p>
-            <p><strong>Date:</strong> {createdAt.toDate().toLocaleDateString('en-IN')}</p>
+            <p>
+              <strong>Category:</strong> {category}
+            </p>
+            <p>
+              <strong>Status:</strong> {status}
+            </p>
+            <p>
+              <strong>Date:</strong>{" "}
+              {createdAt.toDate().toLocaleDateString("en-IN")}
+            </p>
           </div>
         </div>
 
@@ -242,10 +275,14 @@ export default function FundraiserDetailsPage() {
                   href={`/fundraisers/${rel.id}`}
                   className="block border border-gray-200 dark:border-zinc-700 rounded-lg p-4 bg-white dark:bg-zinc-800 hover:shadow-lg transition"
                 >
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{rel.title}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{rel.description}</p>
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                    {rel.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                    {rel.description}
+                  </p>
                   <p className="text-sm text-green-700 dark:text-green-400 mt-1">
-                    ₹{(rel.raised ?? 0).toLocaleString('en-IN')} raised
+                    ₹{(rel.raised ?? 0).toLocaleString("en-IN")} raised
                   </p>
                 </Link>
               ))}
@@ -291,7 +328,7 @@ export default function FundraiserDetailsPage() {
                   disabled={deleting}
                   className="px-4 py-2 text-sm rounded bg-red-600 text-white hover:bg-red-700 transition"
                 >
-                  {deleting ? 'Deleting...' : 'Delete'}
+                  {deleting ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </motion.div>

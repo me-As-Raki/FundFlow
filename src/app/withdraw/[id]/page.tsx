@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { auth, db } from '@/lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { auth, db } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   doc,
   getDoc,
   setDoc,
   updateDoc,
   serverTimestamp,
-} from 'firebase/firestore';
-import { toast } from 'sonner';
+} from "firebase/firestore";
+import { toast } from "sonner";
 import {
   Loader2,
   ArrowLeft,
@@ -23,7 +23,7 @@ import {
   Landmark,
   Smartphone,
   CreditCard,
-} from 'lucide-react';
+} from "lucide-react";
 
 export default function WithdrawPage() {
   const { id } = useParams();
@@ -34,23 +34,35 @@ export default function WithdrawPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
 
-  const [amount, setAmount] = useState('');
-  const [method, setMethod] = useState('');
-  const [details, setDetails] = useState('');
+  const [amount, setAmount] = useState("");
+  const [method, setMethod] = useState("");
+  const [details, setDetails] = useState("");
 
   const withdrawalMethods = [
-    { label: 'GPay', value: 'GPay', icon: <Smartphone className="w-4 h-4" /> },
-    { label: 'PhonePe', value: 'PhonePe', icon: <Smartphone className="w-4 h-4" /> },
-    { label: 'Paytm', value: 'Paytm', icon: <Smartphone className="w-4 h-4" /> },
-    { label: 'UPI', value: 'UPI', icon: <QrCode className="w-4 h-4" /> },
-    { label: 'Bank Transfer', value: 'Bank', icon: <Landmark className="w-4 h-4" /> },
+    { label: "GPay", value: "GPay", icon: <Smartphone className="w-4 h-4" /> },
+    {
+      label: "PhonePe",
+      value: "PhonePe",
+      icon: <Smartphone className="w-4 h-4" />,
+    },
+    {
+      label: "Paytm",
+      value: "Paytm",
+      icon: <Smartphone className="w-4 h-4" />,
+    },
+    { label: "UPI", value: "UPI", icon: <QrCode className="w-4 h-4" /> },
+    {
+      label: "Bank Transfer",
+      value: "Bank",
+      icon: <Landmark className="w-4 h-4" />,
+    },
   ];
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (usr) => {
       if (!usr) {
-        toast.error('Please log in to request a withdrawal.');
-        router.push('/login');
+        toast.error("Please log in to request a withdrawal.");
+        router.push("/login");
       } else {
         setUser(usr);
       }
@@ -61,17 +73,17 @@ export default function WithdrawPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ref = doc(db, 'fundraisers', String(id));
+        const ref = doc(db, "fundraisers", String(id));
         const snap = await getDoc(ref);
         if (snap.exists()) {
           setFundraiser({ id: snap.id, ...snap.data() });
         } else {
-          toast.error('Fundraiser not found.');
-          router.push('/');
+          toast.error("Fundraiser not found.");
+          router.push("/");
         }
       } catch (err) {
         console.error(err);
-        toast.error('Failed to load fundraiser details.');
+        toast.error("Failed to load fundraiser details.");
       } finally {
         setInitialLoading(false);
       }
@@ -87,7 +99,7 @@ export default function WithdrawPage() {
     const available = raised - withdrawn;
 
     if (!withdrawAmount || withdrawAmount <= 0) {
-      toast.error('Please enter a valid amount.');
+      toast.error("Please enter a valid amount.");
       return;
     }
 
@@ -97,13 +109,13 @@ export default function WithdrawPage() {
     }
 
     if (!method) {
-      toast.error('Please select a withdrawal method.');
+      toast.error("Please select a withdrawal method.");
       return;
     }
 
     try {
       setProcessing(true);
-      const withdrawalRef = doc(db, 'withdrawals', `${id}_${Date.now()}`);
+      const withdrawalRef = doc(db, "withdrawals", `${id}_${Date.now()}`);
       await setDoc(withdrawalRef, {
         fundraiserId: id,
         userId: user.uid,
@@ -113,22 +125,22 @@ export default function WithdrawPage() {
         timestamp: serverTimestamp(),
       });
 
-      const fundraiserRef = doc(db, 'fundraisers', String(id));
+      const fundraiserRef = doc(db, "fundraisers", String(id));
       await updateDoc(fundraiserRef, {
         withdrawn: withdrawn + withdrawAmount,
       });
 
-      toast.success('Your withdrawal request has been submitted.');
+      toast.success("Your withdrawal request has been submitted.");
       setFundraiser((prev: any) => ({
         ...prev,
         withdrawn: withdrawn + withdrawAmount,
       }));
 
-      setAmount('');
-      setMethod('');
+      setAmount("");
+      setMethod("");
     } catch (err) {
       console.error(err);
-      toast.error('Something went wrong. Please try again later.');
+      toast.error("Something went wrong. Please try again later.");
     } finally {
       setProcessing(false);
     }
@@ -171,7 +183,9 @@ export default function WithdrawPage() {
           </p>
           <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
             <p>Total Raised: ₹{(fundraiser.raised ?? 0).toLocaleString()}</p>
-            <p>Total Withdrawn: ₹{(fundraiser.withdrawn ?? 0).toLocaleString()}</p>
+            <p>
+              Total Withdrawn: ₹{(fundraiser.withdrawn ?? 0).toLocaleString()}
+            </p>
             <p>Available: ₹{available.toLocaleString()}</p>
           </div>
         </div>
@@ -201,8 +215,8 @@ export default function WithdrawPage() {
                 onClick={() => setMethod(value)}
                 className={`flex items-center gap-2 border px-4 py-2 rounded-xl text-sm font-medium transition ${
                   method === value
-                    ? 'bg-yellow-100 border-yellow-500 dark:bg-yellow-600/20 dark:border-yellow-400'
-                    : 'border-zinc-300 dark:border-zinc-700 hover:border-yellow-500'
+                    ? "bg-yellow-100 border-yellow-500 dark:bg-yellow-600/20 dark:border-yellow-400"
+                    : "border-zinc-300 dark:border-zinc-700 hover:border-yellow-500"
                 }`}
               >
                 {icon}
@@ -222,7 +236,7 @@ export default function WithdrawPage() {
           ) : (
             <BadgeCheck className="w-5 h-5" />
           )}
-          {processing ? 'Submitting...' : 'Submit Withdrawal Request'}
+          {processing ? "Submitting..." : "Submit Withdrawal Request"}
         </button>
       </div>
     </div>

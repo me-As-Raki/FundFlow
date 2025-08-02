@@ -1,12 +1,22 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { toast } from 'sonner';
-import { ArrowLeft, Save, Loader2, Pencil, BadgeDollarSign, FileText, Target, FolderOpen, Tag } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { toast } from "sonner";
+import {
+  ArrowLeft,
+  Save,
+  Loader2,
+  Pencil,
+  BadgeDollarSign,
+  FileText,
+  Target,
+  FolderOpen,
+  Tag,
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function EditFundraiserPage() {
   const { id } = useParams();
@@ -15,32 +25,32 @@ export default function EditFundraiserPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [goal, setGoal] = useState('');
-  const [category, setCategory] = useState('');
-  const [status, setStatus] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [goal, setGoal] = useState("");
+  const [category, setCategory] = useState("");
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
     const fetchFundraiser = async () => {
       try {
-        const fundraiserRef = doc(db, 'fundraisers', String(id));
+        const fundraiserRef = doc(db, "fundraisers", String(id));
         const docSnap = await getDoc(fundraiserRef);
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setTitle(data.title || '');
-          setDescription(data.description || '');
-          setGoal(data.amount?.toString() || '');
-          setCategory(data.category || '');
-          setStatus(data.status || '');
+          setTitle(data.title || "");
+          setDescription(data.description || "");
+          setGoal(data.amount?.toString() || "");
+          setCategory(data.category || "");
+          setStatus(data.status || "");
         } else {
-          toast.error('Fundraiser not found');
-          router.push('/total-fundraisers');
+          toast.error("Fundraiser not found");
+          router.push("/total-fundraisers");
         }
       } catch (error) {
         console.error(error);
-        toast.error('Error loading fundraiser');
+        toast.error("Error loading fundraiser");
       } finally {
         setLoading(false);
       }
@@ -51,13 +61,13 @@ export default function EditFundraiserPage() {
 
   const handleSave = async () => {
     if (!title || !description || !goal || !category || !status) {
-      toast.warning('Please fill all fields');
+      toast.warning("Please fill all fields");
       return;
     }
 
     try {
       setSaving(true);
-      const fundraiserRef = doc(db, 'fundraisers', String(id));
+      const fundraiserRef = doc(db, "fundraisers", String(id));
 
       await updateDoc(fundraiserRef, {
         title,
@@ -67,11 +77,11 @@ export default function EditFundraiserPage() {
         status,
       });
 
-      toast.success('Fundraiser updated successfully!');
-      router.push('/total-fundraisers');
+      toast.success("Fundraiser updated successfully!");
+      router.push("/total-fundraisers");
     } catch (error) {
       console.error(error);
-      toast.error('Error saving fundraiser');
+      toast.error("Error saving fundraiser");
     } finally {
       setSaving(false);
     }

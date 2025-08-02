@@ -1,19 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import {
-  Loader2,
-  Eye,
-  Search,
-  Target,
-  Banknote,
-  User2,
-} from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Loader2, Eye, Search, Target, Banknote, User2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 // Interfaces
 interface Fundraiser {
@@ -33,7 +26,7 @@ interface User {
 export default function TotalFundraisersPage() {
   const [fundraisers, setFundraisers] = useState<Fundraiser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -42,31 +35,33 @@ export default function TotalFundraisersPage() {
         setLoading(true);
 
         // Fetch all users
-        const usersSnapshot = await getDocs(collection(db, 'users'));
+        const usersSnapshot = await getDocs(collection(db, "users"));
         const usersMap: Record<string, string> = {};
         usersSnapshot.forEach((doc) => {
           const user = doc.data() as User;
-          usersMap[doc.id] = user.name || 'Unknown';
+          usersMap[doc.id] = user.name || "Unknown";
         });
 
         // Fetch all fundraisers
-        const fundraiserSnapshot = await getDocs(collection(db, 'fundraisers'));
-        const fundraiserData: Fundraiser[] = fundraiserSnapshot.docs.map((doc) => {
-          const d = doc.data();
-          return {
-            id: doc.id,
-            title: capitalizeFirst(d.title || 'No Title'),
-            description: capitalizeFirst(d.description || 'No Description'),
-            goal: typeof d.amount === 'number' ? d.amount : 0,
-            raised: typeof d.raised === 'number' ? d.raised : 0,
-            createdBy: usersMap[d.userId] || 'Unknown',
-          };
-        });
+        const fundraiserSnapshot = await getDocs(collection(db, "fundraisers"));
+        const fundraiserData: Fundraiser[] = fundraiserSnapshot.docs.map(
+          (doc) => {
+            const d = doc.data();
+            return {
+              id: doc.id,
+              title: capitalizeFirst(d.title || "No Title"),
+              description: capitalizeFirst(d.description || "No Description"),
+              goal: typeof d.amount === "number" ? d.amount : 0,
+              raised: typeof d.raised === "number" ? d.raised : 0,
+              createdBy: usersMap[d.userId] || "Unknown",
+            };
+          }
+        );
 
         setFundraisers(fundraiserData);
       } catch (error) {
-        toast.error('Failed to load fundraisers');
-        console.error('Fetch error:', error);
+        toast.error("Failed to load fundraisers");
+        console.error("Fetch error:", error);
       } finally {
         setLoading(false);
       }

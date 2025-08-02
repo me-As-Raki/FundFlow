@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import {
   doc,
   getDoc,
@@ -14,8 +14,8 @@ import {
   where,
   getDocs,
   setDoc,
-} from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+} from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import {
   Loader2,
   HeartHandshake,
@@ -23,10 +23,10 @@ import {
   CheckCircle,
   ArrowLeft,
   AlertCircle,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
+} from "lucide-react";
+import { toast } from "sonner";
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment } from "react";
 
 export default function DonatePage() {
   const { id } = useParams();
@@ -34,7 +34,7 @@ export default function DonatePage() {
 
   const [fundraiser, setFundraiser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [donateAmount, setDonateAmount] = useState('');
+  const [donateAmount, setDonateAmount] = useState("");
   const [user, setUser] = useState<any>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [donating, setDonating] = useState(false);
@@ -42,12 +42,12 @@ export default function DonatePage() {
   useEffect(() => {
     const fetchFundraiser = async () => {
       try {
-        const docRef = doc(db, 'fundraisers', id as string);
+        const docRef = doc(db, "fundraisers", id as string);
         const docSnap = await getDoc(docRef);
 
         if (!docSnap.exists()) {
-          toast.error('Fundraiser not found');
-          router.push('/');
+          toast.error("Fundraiser not found");
+          router.push("/");
           return;
         }
 
@@ -57,12 +57,12 @@ export default function DonatePage() {
           goal: data.amount ?? 0,
           raised: data.raised ?? 0,
           withdrawn: data.withdrawn ?? 0,
-          status: data.status ?? 'open',
-          title: data.title ?? 'Untitled Fundraiser',
+          status: data.status ?? "open",
+          title: data.title ?? "Untitled Fundraiser",
         });
       } catch (error) {
-        console.error('Error fetching fundraiser:', error);
-        toast.error('Failed to load fundraiser.');
+        console.error("Error fetching fundraiser:", error);
+        toast.error("Failed to load fundraiser.");
       } finally {
         setLoading(false);
       }
@@ -78,33 +78,35 @@ export default function DonatePage() {
     setDonating(true);
 
     if (!user) {
-      toast.error('Please log in to donate.');
+      toast.error("Please log in to donate.");
       setDonating(false);
       return;
     }
 
     const amount = parseInt(donateAmount);
     if (isNaN(amount) || amount <= 0) {
-      toast.error('Enter a valid donation amount');
+      toast.error("Enter a valid donation amount");
       setDonating(false);
       return;
     }
 
     const availableToRaise = fundraiser.goal - fundraiser.raised;
     if (amount > availableToRaise) {
-      toast.error(`Only ₹${availableToRaise.toLocaleString()} left to reach the goal`);
+      toast.error(
+        `Only ₹${availableToRaise.toLocaleString()} left to reach the goal`
+      );
       setDonating(false);
       return;
     }
 
     try {
-      const fundraiserRef = doc(db, 'fundraisers', id as string);
+      const fundraiserRef = doc(db, "fundraisers", id as string);
       const newRaised = fundraiser.raised + amount;
       const isGoalReached = newRaised >= fundraiser.goal;
 
       await updateDoc(fundraiserRef, {
         raised: increment(amount),
-        ...(isGoalReached && { status: 'closed' }),
+        ...(isGoalReached && { status: "closed" }),
       });
 
       await updateDoc(fundraiserRef, {
@@ -116,9 +118,9 @@ export default function DonatePage() {
       });
 
       const donationQuery = query(
-        collection(db, 'donations'),
-        where('fundraiserId', '==', id),
-        where('userId', '==', user.uid)
+        collection(db, "donations"),
+        where("fundraiserId", "==", id),
+        where("userId", "==", user.uid)
       );
       const donationSnap = await getDocs(donationQuery);
 
@@ -129,34 +131,35 @@ export default function DonatePage() {
           timestamp: serverTimestamp(),
         });
       } else {
-        const newDonationRef = doc(collection(db, 'donations'));
+        const newDonationRef = doc(collection(db, "donations"));
         await setDoc(newDonationRef, {
           fundraiserId: id,
           userId: user.uid,
           amount,
           timestamp: serverTimestamp(),
-          userEmail: user.email ?? '',
+          userEmail: user.email ?? "",
         });
       }
 
       setFundraiser((prev: any) => ({
         ...prev,
         raised: newRaised,
-        status: isGoalReached ? 'closed' : prev.status,
+        status: isGoalReached ? "closed" : prev.status,
       }));
 
-      setDonateAmount('');
+      setDonateAmount("");
       toast.success(`🎉 Thank you for donating ₹${amount}`);
     } catch (err) {
-      console.error('Donation failed due to Firestore error:', err);
-      toast.error('Donation failed. Please try again.');
+      console.error("Donation failed due to Firestore error:", err);
+      toast.error("Donation failed. Please try again.");
     } finally {
       setDonating(false);
     }
   };
 
   const { title, goal, raised, withdrawn, status } = fundraiser || {};
-  const percent = goal > 0 ? Math.min(100, Math.floor((raised / goal) * 100)) : 0;
+  const percent =
+    goal > 0 ? Math.min(100, Math.floor((raised / goal) * 100)) : 0;
   const available = raised - withdrawn;
 
   return (
@@ -166,7 +169,9 @@ export default function DonatePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-zinc-900 p-6 rounded-lg shadow-xl flex flex-col items-center">
             <Loader2 className="w-6 h-6 animate-spin text-green-600 mb-2" />
-            <p className="text-sm text-gray-800 dark:text-gray-200">Processing your donation...</p>
+            <p className="text-sm text-gray-800 dark:text-gray-200">
+              Processing your donation...
+            </p>
           </div>
         </div>
       )}
@@ -203,12 +208,14 @@ export default function DonatePage() {
               />
             </div>
             <div className="flex justify-between mt-1 text-sm text-gray-700 dark:text-gray-300">
-              <span>₹{raised?.toLocaleString?.() ?? 0} raised ({percent}%)</span>
+              <span>
+                ₹{raised?.toLocaleString?.() ?? 0} raised ({percent}%)
+              </span>
               <span>Available: ₹{available?.toLocaleString?.() ?? 0}</span>
             </div>
           </div>
 
-          {status === 'closed' ? (
+          {status === "closed" ? (
             <div className="mt-4 flex items-center text-green-700 font-semibold animate-pulse">
               <CheckCircle className="h-5 w-5 mr-2" />
               🎉 Goal Reached! Donations closed.
@@ -246,7 +253,11 @@ export default function DonatePage() {
 
       {/* Confirmation Modal with animation */}
       <Transition show={confirmOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={() => setConfirmOpen(false)}>
+        <Dialog
+          as="div"
+          className="relative z-50"
+          onClose={() => setConfirmOpen(false)}
+        >
           <Transition.Child
             as={Fragment}
             enter="transition-opacity ease-out duration-300"
@@ -272,10 +283,12 @@ export default function DonatePage() {
               <Dialog.Panel className="bg-white dark:bg-zinc-900 rounded-xl p-6 max-w-md w-full border border-green-500 shadow-xl">
                 <div className="flex items-center gap-2 mb-4">
                   <AlertCircle className="text-yellow-500" />
-                  <Dialog.Title className="text-lg font-semibold">Confirm Donation</Dialog.Title>
+                  <Dialog.Title className="text-lg font-semibold">
+                    Confirm Donation
+                  </Dialog.Title>
                 </div>
                 <p className="text-sm mb-4">
-                  Are you sure you want to donate ₹{donateAmount} to{' '}
+                  Are you sure you want to donate ₹{donateAmount} to{" "}
                   <span className="font-semibold">{title}</span>?
                 </p>
                 <div className="flex justify-end gap-3">
